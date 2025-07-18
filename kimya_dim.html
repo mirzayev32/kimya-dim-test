@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kimya DIM Proqramı</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 10px; background: #f5f5f5; }
+    h1, h2 { text-align: center; color: #333; }
+    select, button { font-size: 16px; padding: 8px; margin: 10px auto; display: block; width: 100%; max-width: 320px; border-radius: 5px; border: 1px solid #ccc; }
+    button { cursor: pointer; background-color: #2f8bfd; color: white; border: none; }
+    button:hover { background-color: #236ac1; }
+    .result, .test-result { margin-top: 15px; font-weight: bold; text-align: center; min-height: 50px; }
+    .question { margin-top: 25px; font-weight: 600; color: #222; }
+    .answer-btn { display: block; width: 100%; max-width: 320px; margin: 8px auto; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; background: white; }
+    .answer-btn:hover { background-color: #e0e0e0; }
+    .correct { background-color: #c8e6c9 !important; border-color: #388e3c !important; }
+    .incorrect { background-color: #ffcdd2 !important; border-color: #d32f2f !important; }
+  </style>
+</head>
+<body>
+
+<h1>Kimya DIM Proqramı</h1>
+
+<section>
+  <h2>Reaksiya Simulyatoru</h2>
+  <label for="substance1">Maddə 1 seç:</label>
+  <select id="substance1">
+    <option value="Na">Na</option>
+    <option value="H2O">H₂O</option>
+    <option value="HCl">HCl</option>
+    <option value="NaOH">NaOH</option>
+    <option value="AgNO3">AgNO₃</option>
+    <option value="NaCl">NaCl</option>
+    <option value="Fe3+">Fe³⁺</option>
+    <option value="SCN-">SCN⁻</option>
+    <option value="CaCl2">CaCl₂</option>
+    <option value="Na2CO3">Na₂CO₃</option>
+    <option value="KCl">KCl</option>
+    <option value="BaCl2">BaCl₂</option>
+    <option value="H2SO4">H₂SO₄</option>
+    <option value="Zn">Zn</option>
+    <option value="CuSO4">CuSO₄</option>
+    <option value="Na2SO4">Na₂SO₄</option>
+  </select>
+
+  <label for="substance2">Maddə 2 seç:</label>
+  <select id="substance2">
+    <option value="Na">Na</option>
+    <option value="H2O">H₂O</option>
+    <option value="HCl">HCl</option>
+    <option value="NaOH">NaOH</option>
+    <option value="AgNO3">AgNO₃</option>
+    <option value="NaCl">NaCl</option>
+    <option value="Fe3+">Fe³⁺</option>
+    <option value="SCN-">SCN⁻</option>
+    <option value="CaCl2">CaCl₂</option>
+    <option value="Na2CO3">Na₂CO₃</option>
+    <option value="KCl">KCl</option>
+    <option value="BaCl2">BaCl₂</option>
+    <option value="H2SO4">H₂SO₄</option>
+    <option value="Zn">Zn</option>
+    <option value="CuSO4">CuSO₄</option>
+    <option value="Na2SO4">Na₂SO₄</option>
+  </select>
+
+  <button onclick="showReaction()">Reaksiya göstər</button>
+
+  <div class="result" id="reactionResult"></div>
+</section>
+
+<hr/>
+
+<section>
+  <h2>Kimya Testi (DIM tərzi)</h2>
+  <div class="question" id="questionText"></div>
+  <div id="answers"></div>
+  <div class="test-result" id="testResult"></div>
+</section>
+
+<script>
+  const reactions = {
+    "Na+H2O": {
+      equation: "2Na + 2H₂O → 2NaOH + H₂↑",
+      effect: "Qaz çıxışı, alov"
+    },
+    "HCl+NaOH": {
+      equation: "HCl + NaOH → NaCl + H₂O",
+      effect: "Neytrallaşma, su və duz"
+    },
+    "AgNO3+NaCl": {
+      equation: "AgNO₃ + NaCl → AgCl↓ + NaNO₃",
+      effect: "Ağ çöküntü"
+    },
+    "Fe3++SCN-": {
+      equation: "Fe³⁺ + SCN⁻ → [Fe(SCN)]²⁺",
+      effect: "Qırmızı rəng"
+    },
+    "Na2CO3+CaCl2": {
+      equation: "Na₂CO₃ + CaCl₂ → CaCO₃↓ + 2NaCl",
+      effect: "Ağ çöküntü"
+    },
+    "KCl+AgNO3": {
+      equation: "KCl + AgNO₃ → AgCl↓ + KNO₃",
+      effect: "Ağ çöküntü"
+    },
+    "BaCl2+Na2SO4": {
+      equation: "BaCl₂ + Na₂SO₄ → BaSO₄↓ + 2NaCl",
+      effect: "Ağ çöküntü"
+    },
+    "Zn+H2SO4": {
+      equation: "Zn + H₂SO₄ → ZnSO₄ + H₂↑",
+      effect: "Qaz çıxışı"
+    },
+    "CuSO4+Zn": {
+      equation: "CuSO₄ + Zn → ZnSO₄ + Cu↓",
+      effect: "Mis çökməsi"
+    }
+  };
+
+  function showReaction() {
+    const s1 = document.getElementById('substance1').value;
+    const s2 = document.getElementById('substance2').value;
+    const key1 = s1 + "+" + s2;
+    const key2 = s2 + "+" + s1;
+
+    let res = reactions[key1] || reactions[key2];
+    const output = document.getElementById('reactionResult');
+
+    if(res) {
+      output.innerHTML = `<p><strong>Reaksiya tənliyi:</strong> ${res.equation}</p>
+                          <p><strong>Effekt:</strong> ${res.effect}</p>`;
+    } else if(s1 === s2) {
+      output.textContent = "Eyni maddələr seçilib, reaksiya yoxdur.";
+    } else {
+      output.textContent = "Bu maddələr arasında reaksiya yoxdur.";
+    }
+  }
+
+  const testQuestions = [
+    {
+      question: "Na + H₂O reaksiyasından nə əmələ gəlir?",
+      answers: {
+        a: "NaOH və H₂",
+        b: "NaCl və H₂O",
+        c: "HCl və NaOH",
+        d: "Na₂O və H₂O"
+      },
+      correct: "a",
+    },
+    {
+      question: "Aşağıdakılardan hansı çöküntü əmələ gətirir?",
+      answers: {
+        a: "HCl + NaOH",
+        b: "Na₂CO₃ + CaCl₂",
+        c: "NaOH + HNO₃",
+        d: "NH₄Cl + NaOH"
+      },
+      correct: "b",
+    },
+    {
+      question: "Fe³⁺ + SCN⁻ reaksiyası hansı rəngi əmələ gətirir?",
+      answers: {
+        a: "Yaşıl",
+        b: "Mavi",
+        c: "Qırmızı",
+        d: "Sarı"
+      },
+      correct: "c",
+    },
+    {
+      question: "HCl və NaOH reaksiyası nəticəsində nə əmələ gəlir?",
+      answers: {
+        a: "Su və duz",
+        b: "Hidrogen qazı",
+        c: "Oksigen qazı",
+        d: "Karbon dioksid"
+      },
+      correct: "a",
+    },
+    {
+      question: "Aşağıdakılardan hansı oksidləşmə-reduksiya reaksiyasıdır?",
+      answers: {
+        a: "H₂ + Cl₂ → 2HCl",
+        b: "NaCl + AgNO₃ → AgCl↓ + NaNO₃",
+        c: "HCl + NaOH → NaCl + H₂O",
+        d: "BaCl₂ + Na₂SO₄ → BaSO₄↓ + 2NaCl"
+      },
+      correct: "a",
+    }
+  ];
+
+  let currentQuestion = 0;
+  const questionText = document.getElementById('questionText');
+  const answersDiv = document.getElementById('answers');
+  const testResult = document.getElementById('testResult');
+
+  function loadQuestion() {
+    testResult.textContent = "";
+    const q = testQuestions[currentQuestion];
+    questionText.textContent = `Sual ${currentQuestion + 1}: ${q.question}`;
+    answersDiv.innerHTML = "";
+    for (const [key, text] of Object.entries(q.answers)) {
+      const btn = document.createElement('button');
+      btn.textContent = `${key}) ${text}`;
+      btn.className = "answer-btn";
+      btn.onclick = () => checkAnswer(key);
+      answersDiv.appendChild(btn);
+    }
+  }
+
+  function checkAnswer(selected) {
+    const q = testQuestions[currentQuestion];
+    for (const btn of answersDiv.children) {
+      btn.disabled = true;
+      if(btn.textContent.startsWith(q.correct)) {
+        btn.classList.add("correct");
+      }
+      if(btn.textContent.startsWith(selected) && selected !== q.correct) {
+        btn.classList.add("incorrect");
+      }
+    }
+    if(selected === q.correct) {
+      testResult.textContent = "Doğru ✔️";
+    } else {
+      testResult.textContent = `Səhv! Doğru cavab: ${q.correct}) ${q.answers[q.correct]}`;
+    }
+    currentQuestion++;
+    if(currentQuestion < testQuestions.length) {
+      setTimeout(loadQuestion, 2000);
+    } else {
+      setTimeout(() => {
+        questionText.textContent = "Test bitdi! Təbriklər!";
+        answersDiv.innerHTML = "";
+        testResult.textContent = "";
+        currentQuestion = 0;
+        setTimeout(loadQuestion, 2000);
+      }, 2000);
+    }
+  }
+
+  loadQuestion();
+</script>
+
+</body>
+</html>
