@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8" />
+<title>Kimya DIM Testi - Asan, Orta, Çətin</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 700px; margin: 20px auto; padding: 10px; background: #f7f9fc; }
+  h1 { text-align: center; color: #333; }
+  .question { margin-top: 20px; font-weight: 600; color: #222; }
+  .answer-btn {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 8px auto;
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  .answer-btn:hover { background-color: #e0e0e0; }
+  .correct { background-color: #c8e6c9 !important; border-color: #388e3c !important; }
+  .incorrect { background-color: #ffcdd2 !important; border-color: #d32f2f !important; }
+  #nextBtn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 5px;
+    border: none;
+    background-color: #2f8bfd;
+    color: white;
+    cursor: pointer;
+    display: none;
+  }
+  #nextBtn:hover {
+    background-color: #236ac1;
+  }
+  #result {
+    margin-top: 25px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+    color: #333;
+  }
+  #stageSelect {
+    margin: 15px auto;
+    display: block;
+    font-size: 16px;
+    padding: 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Kimya DIM Testi</h1>
+
+<label for="stageSelect" style="display:block; text-align:center; font-weight:bold;">Səviyyəni seç:</label>
+<select id="stageSelect" onchange="startTest()">
+  <option value="asan">Asan</option>
+  <option value="orta">Orta</option>
+  <option value="cetin">Çətin</option>
+  <option value="hamisi">Hamısı qarışıq</option>
+</select>
+
+<div class="question" id="questionText"></div>
+<div id="answers"></div>
+
+<button id="nextBtn" onclick="nextQuestion()">Növbəti sual</button>
+
+<div id="result"></div>
+
+<script>
+  // Sualları səviyyələr üzrə bölürük
+  const questionsData = {
+    asan: [
+      {q:"Na + H₂O → ?", answers:["NaCl + H₂","NaOH + H₂","Na₂O + H₂O","H₂ + O₂"], correct:"NaOH + H₂"},
+      {q:"Ca + O₂ → ?", answers:["CaO₂","CaO","CaOH","Ca₂O₃"], correct:"CaO"},
+      {q:"C + O₂ → ?", answers:["CO₂","CO","CO₃","C₂O"], correct:"CO₂"},
+      {q:"H₂ + Cl₂ → ?", answers:["2HCl","HCl","ClH₂","H₂Cl₂"], correct:"2HCl"},
+      {q:"Fe + O₂ + H₂O → ?", answers:["Fe(OH)₃","FeO","Fe₂O₃","Fe₃O₄"], correct:"Fe₂O₃"},
+      {q:"NaOH + H₂SO₄ → ?", answers:["NaHSO₄ + H₂O","Na₂SO₄ + H₂O","NaOH + SO₃","Na₂SO₃ + H₂"], correct:"Na₂SO₄ + H₂O"},
+      {q:"Zn + HCl → ?", answers:["ZnCl + H₂O","ZnCl₂ + H₂","ZnO + HCl","Zn + Cl₂"], correct:"ZnCl₂ + H₂"},
+      {q:"Mg + N₂ → ?", answers:["MgN","Mg + N₂ (reaksiya olmur)","Mg₃N₂","Mg₂N"], correct:"Mg₃N₂"},
+      {q:"K + H₂O → ?", answers:["KH + O₂","K + H₂O (reaksiya olmur)","KOH + H₂","K₂O + H₂"], correct:"KOH + H₂"},
+      {q:"Al + O₂ → ?", answers:["AlO₂","Al(OH)₃","Al₂O₃","AlO"], correct:"Al₂O₃"},
+    ],
+    orta: [
+      {q:"C₂H₅OH + O₂ → ?", answers:["CO₂ + H₂O","C₂H₄ + H₂O","CO + H₂O","C₂H₆ + O₂"], correct:"CO₂ + H₂O"},
+      {q:"Fe + H₂SO₄ → ?", answers:["FeSO₄ + H₂","Fe₂(SO₄)₃ + H₂","Fe + SO₄","FeH₂SO₄"], correct:"FeSO₄ + H₂"},
+      {q:"Zn + CuSO₄ → ?", answers:["ZnSO₄ + Cu","Zn + CuSO₄","ZnCu + SO₄","ZnCuSO₄"], correct:"ZnSO₄ + Cu"},
+      {q:"Na₂CO₃ + CaCl₂ → ?", answers:["CaCO₃↓ + 2NaCl","Na₂Cl + CaCO₃","CaNaCO₃ + Cl₂","NaCa + CO₃Cl₂"], correct:"CaCO₃↓ + 2NaCl"},
+      {q:"Al + HCl → ?", answers:["AlCl₃ + H₂","AlCl + H₂O","Al + H₂ + Cl","AlHCl₃"], correct:"AlCl₃ + H₂"},
+      {q:"SO₂ + H₂O → ?", answers:["H₂SO₃","H₂SO₄","SO₃ + H₂O","H₂S"], correct:"H₂SO₃"},
+      {q:"KClO₃ → ?", answers:["KCl + O₂","KClO₂ + O₂","KCl + H₂O","KClO₄"], correct:"KCl + O₂"},
+      {q:"HNO₃ + NaOH → ?", answers:["NaNO₃ + H₂O","NaHNO₃ + OH","HNO₃ + NaOH (reaksiya olmur)","NaOH + NO₃"], correct:"NaNO₃ + H₂O"},
+      {q:"C₃H₈ + O₂ → ?", answers:["CO₂ + H₂O","C₃H₆ + H₂O","CO + H₂O","C₃H₈ + O₂ (reaksiya olmur)"], correct:"CO₂ + H₂O"},
+      {q:"Pb(NO₃)₂ + KI → ?", answers:["PbI₂↓ + 2KNO₃","PbK + I₂ + NO₃","Pb + KI + NO₃","Pb(NO₃)₂ + KI (reaksiya olmur)"], correct:"PbI₂↓ + 2KNO₃"},
+    ],
+    cetin: [
+      {q:"C₆H₆ + Br₂ (FeBr₃ katalizatoru ilə) → ?", answers:["C₆H₆Br + HBr","C₆H₅Br + HBr","C₆H₄Br₂ + H₂","C₆H₆ + Br₂ (reaksiya olmur)"], correct:"C₆H₅Br + HBr"},
+      {q:"KMnO₄ + H₂SO₄ + FeSO₄ → ?", answers:["MnSO₄ + Fe₂(SO₄)₃ + H₂O","MnO₂ + FeSO₄ + H₂O","MnSO₄ + FeSO₄ + H₂SO₄","MnSO₄ + FeSO₄ + O₂"], correct:"MnSO₄ + Fe₂(SO₄)₃ + H₂O"},
+      {q:"NaBH₄ + H₂O → ?", answers:["NaBO₂ + H₂","NaOH + BH₃","NaBH₄ + H₂O (reaksiya olmur)","Na + BH₄ + H₂O"], correct:"NaBO₂ + H₂"},
+      {q:"CH₃COOH + SOCl₂ → ?", answers:["CH₃COCl + SO₂ + HCl","CH₃COOH + SOCl₂ (reaksiya olmur)","CH₃COOH + SO₂ + HCl","CH₃COCl + SO₃ + HCl"], correct:"CH₃COCl + SO₂ + HCl"},
+      {q:"C₂H₄ + H₂SO₄ → ?", answers:["C₂H₅OSO₃H","C₂H₆ + SO₃","C₂H₄ + H₂SO₄ (reaksiya olmur)","C₂H₄OSO₄H"], correct:"C₂H₅OSO₃H"},
+      {q:"Fe₃O₄ + CO → ?", answers:["Fe + CO₂","FeO + CO₂","3Fe + CO₂","Fe₃ + CO₂"], correct:"3Fe + CO₂"},
+      {q:"HNO₃ (cons.) + Cu → ?", answers:["Cu(NO₃)₂ + NO₂ + H₂O","Cu + HNO₃ (reaksiya olmur)","Cu(NO₃) + NO + H₂O","CuO + NO₂ + H₂O"], correct:"Cu(NO₃)₂ + NO₂ + H₂O"},
+      {q:"Cl₂ + H₂O ⇌ ?", answers:["HCl + HOCl","HCl + HClO₄","HCl + H₂O₂","H₂ + ClO₂"], correct:"HCl + HOCl"},
+      {q:"Ca₃(PO₄)₂ + SiO₂ + C (1800°C) → ?", answers:["CaSiO₃ + P + CO","CaSiO₃ + P₄ + CO","CaSiO₃ + P₄ + CO₂","Ca₃SiO₄ + P + CO"], correct:"CaSiO₃ + P₄ + CO"},
+      {q:"Al₂O₃ + NaOH (qaynar) → ?", answers:["NaAlO₂ + H₂O","NaAlO₂ + NaOH","Al(OH)₃ + NaOH","Al + NaOH + H₂O"], correct:"NaAlO₂ + H₂O"},
+    ]
+  };
+
+  let currentStage = 'asan';
+  let questions = [];
+  let currentIndex = 0;
+  let score = 0;
+  let answered = false;
+
+  const questionText = document.getElementById('questionText');
+  const answersDiv = document.getElementById('answers');
+  const nextBtn = document.getElementById('nextBtn');
+  const resultDiv = document.getElementById('result');
+  const stageSelect = document.getElementById('stageSelect');
+
+  function shuffleArray(array) {
+    for (let i = array.length -1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i+1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  function startTest() {
+    currentStage = stageSelect.value;
+    score = 0;
+    currentIndex = 0;
+    answered = false;
+    resultDiv.innerHTML = "";
+    nextBtn.style.display = "none";
+
+    if(currentStage === 'hamisi'){
+      questions = [...questionsData.asan, ...questionsData.orta, ...questionsData.cetin];
+      shuffleArray(questions);
+    } else {
+      questions = [...questionsData[currentStage]];
+      shuffleArray(questions);
+    }
+    showQuestion();
+  }
+
+  function showQuestion() {
+    answered = false;
+    nextBtn.style.display = "none";
+    resultDiv.innerHTML = "";
+
+    if(currentIndex >= questions.length) {
+      showResult();
+      return;
+    }
+
+    const q = questions[currentIndex];
+    questionText.textContent = `Sual ${currentIndex + 1}: ${q.q}`;
+
+    // Variantları qarışdır
+    const answers = [...q.answers];
+    shuffleArray(answers);
+
+    answersDiv.innerHTML = "";
+    answers.forEach(ans => {
+      const btn = document.createElement('button');
+      btn.textContent = ans;
+      btn.className = "answer-btn";
+      btn.onclick = () => selectAnswer(btn, ans, q.correct);
+      answersDiv.appendChild(btn);
+    });
+  }
+
+  function selectAnswer(button, selected, correct) {
+    if(answered) return; // artıq cavab verilib
+
+    answered = true;
+    if(selected === correct){
+      button.classList.add('correct');
+      score++;
+      resultDiv.textContent = "Doğru cavab!";
+    } else {
+      button.classList.add('incorrect');
+      resultDiv.textContent = `Yanlış cavab! Düzgün cavab: ${correct}`;
+      // düzgün cavabı göstər
+      [...answersDiv.children].forEach(btn => {
+        if(btn.textContent === correct) btn.classList.add('correct');
+      });
+    }
+    nextBtn.style.display = "inline-block";
+  }
+
+  function nextQuestion() {
+    currentIndex++;
+    showQuestion();
+  }
+
+  // Testi başlanğıcda yüklə
+  startTest();
+</script>
+
+</body>
+</html>
